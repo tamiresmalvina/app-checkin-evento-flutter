@@ -59,7 +59,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/banner_evento.png
+    - assets/banner_evento.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

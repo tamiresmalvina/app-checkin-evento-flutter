@@ -14,6 +14,7 @@ class TelaCheckinEvento extends StatefulWidget {
 class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
   final TextEditingController _controladorNome = TextEditingController();
   final TextEditingController _controladorEmail = TextEditingController();
+
   final List<_Participante> _presentes = [];
 
   bool _ingressoGerado = false;
@@ -42,27 +43,31 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
     final email = _controladorEmail.text.trim();
     final emailNormalizado = email.toLowerCase();
 
+    String? erroNome;
+    String? erroEmail;
+
+    if (nome.isEmpty) {
+      erroNome = 'Insira o nome do participante.';
+    }
+
+    if (email.isEmpty) {
+      erroEmail = 'Insira um e-mail.';
+    } else if (!_emailValido(email)) {
+      erroEmail = 'Insira um e-mail válido.';
+    } else if (_presentes.any(
+      (participante) => participante.email.toLowerCase() == emailNormalizado,
+    )) {
+      erroEmail = 'Este e-mail já realizou check-in.';
+    }
+
     setState(() {
-      _erroNome = nome.isEmpty ? 'Insira o nome do participante.' : null;
-
-      if (email.isEmpty) {
-        _erroEmail = 'Insira um e-mail.';
-      } else if (!_emailValido(email)) {
-        _erroEmail = 'Insira um e-mail válido.';
-      } else if (_presentes.any(
-        (participante) => participante.email.toLowerCase() == emailNormalizado,
-      )) {
-        _erroEmail = 'Este e-mail já realizou check-in.';
-      } else {
-        _erroEmail = null;
-      }
-
-      if (_erroNome == null && _erroEmail == null) {
-        _ingressoGerado = true;
-      }
+      _erroNome = erroNome;
+      _erroEmail = erroEmail;
+      _ingressoGerado = erroNome == null && erroEmail == null;
     });
 
-    if (_erroNome != null || _erroEmail != null) return;
+    if (!_ingressoGerado) return;
+
     FocusScope.of(context).unfocus();
   }
 
@@ -72,6 +77,7 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
     );
 
     if (!mounted || resultado == null) return;
+
     _processarResultadoLeitura(resultado);
   }
 
@@ -110,13 +116,11 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
       _presentes.add(
         _Participante(nome: nomeParticipante, email: emailParticipante),
       );
-    });
 
-    _mostrarResultado(
-      titulo: 'Check-in confirmado',
-      mensagem: 'Entrada confirmada para $nomeParticipante.',
-      tipo: TipoResultado.sucesso,
-    );
+      _tituloResultado = 'Check-in confirmado';
+      _mensagemResultado = 'Entrada confirmada para $nomeParticipante.';
+      _tipoResultado = TipoResultado.sucesso;
+    });
   }
 
   void _mostrarResultado({
@@ -155,6 +159,61 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
       case TipoResultado.neutro:
         return Icons.qr_code_2;
     }
+  }
+
+  Widget _construirCabecalhoIngresso() {
+    return SizedBox(
+      width: double.infinity,
+      height: 70,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Imagem usada como fundo do banner.
+          Image.asset(
+            'assets/banner_evento.jpg',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: TemaAplicativo.azulPrincipal,
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.image_outlined,
+                  color: Colors.white70,
+                  size: 32,
+                ),
+              );
+            },
+          ),
+
+          // Camada escura para melhorar a leitura do texto.TemaAplicativo.azulMarinho
+          Container(color: TemaAplicativo.azulPrincipal.withValues(alpha: 0.35),),
+
+          // Título sobreposto e centralizado no banner.
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Semana da Computação 2026',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.5,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black54,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _construirCartaoPresenca(_Participante participante) {
@@ -200,6 +259,7 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
     final nome = _controladorNome.text.trim();
     final email = _controladorEmail.text.trim();
     final dadosQrCode = 'CHECKIN|$nome|$email';
+
     final corResultado = _obterCorResultado();
 
     return Scaffold(
@@ -219,12 +279,16 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                   prefixIcon: const Icon(Icons.person_outline),
                   errorText: _erroNome,
                 ),
-                onChanged: (_) => setState(() {
-                  _erroNome = null;
-                  _ingressoGerado = false;
-                }),
+                onChanged: (_) {
+                  setState(() {
+                    _erroNome = null;
+                    _ingressoGerado = false;
+                  });
+                },
               ),
+
               const SizedBox(height: 16),
+
               TextField(
                 controller: _controladorEmail,
                 keyboardType: TextInputType.emailAddress,
@@ -234,77 +298,89 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                   prefixIcon: const Icon(Icons.email_outlined),
                   errorText: _erroEmail,
                 ),
-                onChanged: (_) => setState(() {
-                  _erroEmail = null;
-                  _ingressoGerado = false;
-                }),
+                onChanged: (_) {
+                  setState(() {
+                    _erroEmail = null;
+                    _ingressoGerado = false;
+                  });
+                },
               ),
+
               const SizedBox(height: 20),
+
               ElevatedButton.icon(
                 onPressed: _gerarIngresso,
                 icon: const Icon(Icons.confirmation_number_outlined),
                 label: const Text('Gerar ingresso'),
               ),
+
               if (_ingressoGerado) ...[
                 const SizedBox(height: 24),
+
                 Card(
                   clipBehavior: Clip.antiAlias,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'SEMANA DA COMPUTAÇÃO 2026',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: TemaAplicativo.azulPrincipal,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _construirCabecalhoIngresso(),
+
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
+                        child: Column(
+                          children: [
+                            Text(
+                              nome,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: TemaAplicativo.textoPrincipal,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Text(
+                              email,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: TemaAplicativo.textoPrincipal,
+                                fontSize: 14,
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: TemaAplicativo.bordaAzul,
+                                ),
+                              ),
+                              child: QrImageView(
+                                data: dadosQrCode,
+                                version: QrVersions.auto,
+                                size: 190,
+                                backgroundColor: Colors.white,
+                                foregroundColor: TemaAplicativo.azulMarinho,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          nome,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: TemaAplicativo.textoPrincipal,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          email,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: TemaAplicativo.textoPrincipal,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: TemaAplicativo.bordaAzul),
-                          ),
-                          child: QrImageView(
-                            data: dadosQrCode,
-                            version: QrVersions.auto,
-                            size: 190,
-                            backgroundColor: Colors.white,
-                            foregroundColor: TemaAplicativo.azulMarinho,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
+
               const SizedBox(height: 28),
               const Divider(height: 1),
               const SizedBox(height: 20),
+
               const Row(
                 children: [
                   Icon(
@@ -323,7 +399,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                   ),
                 ],
               ),
+
               const SizedBox(height: 14),
+
               OutlinedButton.icon(
                 onPressed: _abrirLeitor,
                 icon: const Icon(Icons.qr_code_scanner),
@@ -337,7 +415,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 18),
+
               Card(
                 color: TemaAplicativo.fundoClaro,
                 child: Container(
@@ -364,7 +444,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                           size: 26,
                         ),
                       ),
+
                       const SizedBox(width: 12),
+
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +459,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
+
                             const SizedBox(height: 4),
+
                             Text(
                               _mensagemResultado,
                               style: const TextStyle(
@@ -392,7 +476,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 24),
+
               Row(
                 children: [
                   const Expanded(
@@ -405,6 +491,7 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                       ),
                     ),
                   ),
+
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -425,7 +512,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                   ),
                 ],
               ),
+
               const SizedBox(height: 16),
+
               if (_presentes.isEmpty)
                 Container(
                   width: double.infinity,
@@ -445,7 +534,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                         size: 34,
                         color: TemaAplicativo.azulPrincipal,
                       ),
+
                       SizedBox(height: 8),
+
                       Text(
                         'Nenhum check-in confirmado ainda.',
                         textAlign: TextAlign.center,
@@ -454,7 +545,9 @@ class _EstadoTelaCheckinEvento extends State<TelaCheckinEvento> {
                           fontSize: 14,
                         ),
                       ),
+
                       SizedBox(height: 4),
+
                       Text(
                         'Os participantes aparecerão aqui após '
                         'a validação do ingresso.',
