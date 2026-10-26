@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class TemaAplicativo {
@@ -18,7 +17,6 @@ class TemaAplicativo {
   static const Color fundoCamera = Color(0xFF06111F);
   static const Color superficieCamera = Color(0xFF0B1D32);
 
-
   static ThemeData obterTema() {
     return ThemeData(
       useMaterial3: true,
@@ -34,19 +32,15 @@ class TemaAplicativo {
       scaffoldBackgroundColor: fundoClaro,
 
       appBarTheme: const AppBarTheme(
-        backgroundColor: azulEscuro,
+        backgroundColor: azulPrincipal,
         foregroundColor: branco,
         centerTitle: false,
         elevation: 0,
       ),
 
       textTheme: const TextTheme(
-        bodyLarge: TextStyle(
-          color: textoPrincipal,
-        ),
-        bodyMedium: TextStyle(
-          color: textoPrincipal,
-        ),
+        bodyLarge: TextStyle(color: textoPrincipal),
+        bodyMedium: TextStyle(color: textoPrincipal),
         titleLarge: TextStyle(
           color: textoPrincipal,
           fontWeight: FontWeight.bold,
@@ -60,28 +54,17 @@ class TemaAplicativo {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: branco,
-        labelStyle: const TextStyle(
-          color: azulPrincipal,
-        ),
-        hintStyle: const TextStyle(
-          color: Color(0xFF7186A5),
-        ),
+        labelStyle: const TextStyle(color: azulPrincipal),
+        hintStyle: const TextStyle(color: Color(0xFF7186A5)),
         prefixIconColor: azulPrincipal,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: bordaAzul,
-          ),
+          borderSide: const BorderSide(color: bordaAzul),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: azulPrincipal,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: azulPrincipal, width: 2),
         ),
       ),
 
@@ -101,10 +84,7 @@ class TemaAplicativo {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: azulPrincipal,
-          side: const BorderSide(
-            color: azulPrincipal,
-            width: 1.5,
-          ),
+          side: const BorderSide(color: azulPrincipal, width: 1.5),
           minimumSize: const Size(double.infinity, 50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
@@ -117,15 +97,11 @@ class TemaAplicativo {
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(
-            color: Color(0xFFD4E7FF),
-          ),
+          side: const BorderSide(color: Color(0xFFD4E7FF)),
         ),
       ),
 
-      dividerTheme: const DividerThemeData(
-        color: Color(0xFFD4E5F8),
-      ),
+      dividerTheme: const DividerThemeData(color: Color(0xFFD4E5F8)),
     );
   }
 }
