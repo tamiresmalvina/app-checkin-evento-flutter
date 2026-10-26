@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'tela_checkin_evento.dart';
+import 'tema.dart';
 
 void main() {
   runApp(const AplicativoCheckinEvento());
@@ -9,11 +11,11 @@ class AplicativoCheckinEvento extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Check-in de Evento',
-      home: (Scaffold(
-        body: Center(child: Text('Aplicativo de Check-in de Evento')),
-      )),
+      theme: TemaAplicativo.obterTema(),
+      home: const TelaCheckinEvento(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
