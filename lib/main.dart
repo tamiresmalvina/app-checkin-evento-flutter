@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'tela_checkin_evento.dart';
+import 'screens/tela_checkin_evento.dart';
 import 'tema.dart';
 
 void main() {

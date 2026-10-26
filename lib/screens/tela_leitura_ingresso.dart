@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'tema.dart';
+import '../tema.dart';
+import '../widgets/moldura_leitor_qr.dart';
+import '../widgets/orientacao_leitor_qr.dart';
 
 class TelaLeituraIngresso extends StatefulWidget {
   const TelaLeituraIngresso({super.key});
@@ -25,10 +27,10 @@ class _EstadoTelaLeituraIngresso extends State<TelaLeituraIngresso> {
   void initState() {
     super.initState();
 
-    // Na versão 5 do mobile_scanner, os códigos são recebidos por este stream.
+    // Recebe os códigos detectados pela câmera.
     _assinaturaCodigos = _controladorCamera.barcodes.listen(_aoDetectarCodigo);
 
-    // Solicita o início da câmera ao abrir a tela.
+    // Inicia a câmera quando a tela é aberta.
     _iniciarCamera();
   }
 
@@ -37,6 +39,7 @@ class _EstadoTelaLeituraIngresso extends State<TelaLeituraIngresso> {
       await _controladorCamera.start();
     } catch (erro) {
       if (!mounted) return;
+
       setState(() {
         _erroCamera =
             'Não foi possível abrir a câmera. '
@@ -67,7 +70,10 @@ class _EstadoTelaLeituraIngresso extends State<TelaLeituraIngresso> {
   Future<void> _cancelarLeitura() async {
     await _assinaturaCodigos?.cancel();
     await _controladorCamera.stop();
-    if (mounted) Navigator.of(context).pop();
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -91,6 +97,7 @@ class _EstadoTelaLeituraIngresso extends State<TelaLeituraIngresso> {
         child: Column(
           children: [
             const SizedBox(height: 24),
+
             const Text(
               'Ler ingresso',
               style: TextStyle(
@@ -99,79 +106,30 @@ class _EstadoTelaLeituraIngresso extends State<TelaLeituraIngresso> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 8),
+
             const Text(
               'Posicione o QR Code dentro da moldura',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
+
             const SizedBox(height: 32),
+
             Expanded(
               child: Center(
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: _erroCamera != null
-                          ? Container(
-                              color: TemaAplicativo.superficieCamera,
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.all(20),
-                              child: Text(
-                                _erroCamera!,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            )
-                          : Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                MobileScanner(controller: _controladorCamera),
-                                IgnorePointer(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(24),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: TemaAplicativo.azulPrincipal,
-                                          width: 4,
-                                        ),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
+                child: MolduraLeitorQr(
+                  controladorCamera: _controladorCamera,
+                  erroCamera: _erroCamera,
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.qr_code_scanner,
-                    color: TemaAplicativo.azulCiano,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'Aponte a câmera para o QR Code do ingresso.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
+            const OrientacaoLeitorQr(),
+
             const SizedBox(height: 32),
+
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               child: SizedBox(
